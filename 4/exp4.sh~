@@ -1,0 +1,27 @@
+#!bin/sh
+# Shell program display processes with cpu greater than a threshold
+
+echo " Process management"
+ps aux | sort -nrk 4 | head | awk '{print $2 " " $3 " " $4 " " $11 }' > psout
+cat psout
+read -p "Enter threshold level for cpu load: " th
+read -p "Enter threshold level for memory usage: " me
+while IFS= read line
+do
+pno=$(echo $line | awk '{print $1}')
+cpuload=$(echo $line | awk '{print $2}')
+pmem=$(echo $line | awk '{print $3}')
+pname=$(echo $line | awk '{print $4}')
+if [ $(echo "$cpuload >= $th" | bc -l) -eq 1 ]
+then
+	echo "$pno $cpuload $pmem $pname"
+	kill "$pno"
+
+elif [ $(echo "$pmem >= $me" | bc -l) -eq 1 ]
+then
+	echo "$pno $pmem $pname"
+else
+echo "Invalid"
+fi
+done <"psout"
+
